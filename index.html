@@ -146,20 +146,7 @@ function clearmove() {
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
 }
-    <script>
-const canvas = document.getElementById("myCanvas");
-const ctx = canvas.getContext("2d");
 
-ctx.beginPath();
-ctx.arc(95, 50, 40, 0, 2 * Math.PI);
-ctx.fillStyle = "red";
-ctx.fill();
-ctx.lineWidth = 4;
-ctx.strokeStyle = "blue";
-ctx.stroke();
-</script>
-    
-</script>
 <div style="text-align:center;width:480px;">
   <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
   <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
