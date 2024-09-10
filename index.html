@@ -16,11 +16,14 @@ canvas {
 var myGamePiece;
 var myObstacles = [];
 var mySound;
-
+var myScore;
+    
 function startGame() {
     myGamePiece = new component(30, 30, "blue", 10, 120);
     mySound = new sound("bounce.mp3");
+    myScore = new component("30px","Consolas","white",280,40,"text")
     myGameArea.start();
+
 }
 
 var myGameArea = {
