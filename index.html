@@ -22,6 +22,9 @@ canvas {
 
 var myGamePiece;
 var myObstacles = [];
+var myCollectibles = []; // New array to hold collectible items
+var myScore;
+var scoreCount = 0; // Score counter
 var mySound;
 var myMusic;
 var gamePaused = false; // Track if the game is paused
@@ -29,6 +32,7 @@ var isMuted = false; // Track mute state
 
 function startGame() {
     myGamePiece = new component(30, 30, "spaceship.png", 10, 120, "image");
+    myScore = new component("30px", "Consolas", "black", 280, 40, "text"); // Score component
     mySound = new sound("Collison.mp3");
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
@@ -92,6 +96,16 @@ function component(width, height, color, x, y, type) {
         ctx = myGameArea.context;
         if (this.type == "image") {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        } else if (this.type == "circle") { // Draw the collectible as a circle
+            ctx.beginPath();
+            ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.closePath();
+        } else if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
         } else {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -119,38 +133,62 @@ function component(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
-    if (!gamePaused) { // Only update if game is not paused
-        var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-        for (i = 0; i < myObstacles.length; i += 1) {
-            if (myGamePiece.crashWith(myObstacles[i])) {
-                mySound.play();
-                myMusic.stop();
-                myGameArea.stop();
-                return;
-            } 
-        }
-        myGameArea.clear();
-        myGameArea.frameNo += 1;
-        if (myGameArea.frameNo == 1 || everyinterval(150)) {
-            x = myGameArea.canvas.width;
-            minHeight = 20;
-            maxHeight = 200;
-            height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
-            minGap = 50;
-            maxGap = 200;
-            gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
-            
-            // Replace obstacle bars with pole images
-            myObstacles.push(new component(50, height, "pole.png", x, 0, "image"));
-            myObstacles.push(new component(50, x - height - gap, "pole.png", x, height + gap, "image"));
-        }
-        for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x -= 1;
-            myObstacles[i].update();
-        }
-        myGamePiece.newPos();
-        myGamePiece.update();
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            mySound.play();
+            myMusic.stop();
+            myGameArea.stop();
+            return;
+        } 
     }
+
+    // Check for collectible collection
+    for (i = 0; i < myCollectibles.length; i += 1) {
+        if (myGamePiece.crashWith(myCollectibles[i])) {
+            scoreCount++; // Increment score when a collectible is "collected"
+            myCollectibles.splice(i, 1); // Remove collectible from the array after it's collected
+        }
+    }
+
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.width;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+
+        // Push obstacles
+        myObstacles.push(new component(50, height, "pole.png", x, 0, "image"));
+        myObstacles.push(new component(50, x - height - gap, "pole.png", x, height + gap, "image"));
+
+        // Add collectibles (orange circle)
+        myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle")); // Example collectible
+    }
+
+    // Update obstacles
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x -= 1;
+        myObstacles[i].update();
+    }
+
+    // Update collectibles
+    for (i = 0; i < myCollectibles.length; i += 1) {
+        myCollectibles[i].x -= 1;
+        myCollectibles[i].update();
+    }
+
+    // Update score display
+    myScore.text = "SCORE: " + scoreCount;
+    myScore.update();
+    
+    myGamePiece.newPos();
+    myGamePiece.update();
 }
 
 function sound(src) {
@@ -252,7 +290,7 @@ function toggleMute() {
 </div>
 
 <!-- Pause Image -->
-<img id="pauseImage" src="pause.jpeg" alt="Paused" width="100" height="100">
+<img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
 
 </body>
 </html>
