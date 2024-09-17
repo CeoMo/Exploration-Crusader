@@ -23,6 +23,28 @@ function startGame() {
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
     myGameArea.start();
+
+    // Event listeners for keyboard controls
+    window.addEventListener('keydown', function (e) {
+        switch (e.key) {
+            case 'ArrowUp':
+                moveup();
+                break;
+            case 'ArrowDown':
+                movedown();
+                break;
+            case 'ArrowLeft':
+                moveleft();
+                break;
+            case 'ArrowRight':
+                moveright();
+                break;
+        }
+    });
+
+    window.addEventListener('keyup', function (e) {
+        clearmove();
+    });
 }
 
 var myGameArea = {
@@ -147,6 +169,7 @@ function clearmove() {
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
 }
+    
 </script>
 <div style="text-align:center;width:480px;">
   <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
