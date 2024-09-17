@@ -111,23 +111,43 @@ function component(width, height, color, x, y, type) {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
-    this.newPos = function() {
-        this.x += this.speedX;
-        this.y += this.speedY;        
-    }    
+    
+    // Updated crashWith function
     this.crashWith = function(otherobj) {
-        var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
+        var crash = false;
+
+        if (this.type === 'circle') {
+            // Calculate the center of the circle
+            var mycenterX = this.x + this.width / 2;
+            var mycenterY = this.y + this.height / 2;
+            var radius = this.width / 2;
+
+            // Check for collision with rectangle (obstacle)
+            var otherleft = otherobj.x;
+            var otherright = otherobj.x + otherobj.width;
+            var othertop = otherobj.y;
+            var otherbottom = otherobj.y + otherobj.height;
+
+            // Check if the circle's center is within the rectangle's boundaries
+            if (mycenterX > otherleft && mycenterX < otherright && mycenterY > othertop && mycenterY < otherbottom) {
+                crash = true;
+            }
+
+        } else {
+            // Original rectangular collision detection for obstacles
+            var myleft = this.x;
+            var myright = this.x + this.width;
+            var mytop = this.y;
+            var mybottom = this.y + this.height;
+            var otherleft = otherobj.x;
+            var otherright = otherobj.x + otherobj.width;
+            var othertop = otherobj.y;
+            var otherbottom = otherobj.y + otherobj.height;
+            if (!(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright)) {
+                crash = true;
+            }
         }
+        
         return crash;
     }
 }
