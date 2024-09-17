@@ -16,6 +16,8 @@ var myGamePiece;
 var myObstacles = [];
 var mySound;
 var myMusic;
+var gamePaused = false; // Track if the game is paused
+
 
 function startGame() {
     myGamePiece = new component(30, 30, "green", 10, 120);
@@ -99,6 +101,7 @@ function component(width, height, color, x, y) {
 }
 
 function updateGameArea() {
+    if (!gamePaused) { // Only update if game is not paused
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
     for (i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
@@ -168,6 +171,15 @@ function moveright() {
 function clearmove() {
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
+}
+// Function to pause or continue the game
+function pauseOrContinueGame() {
+    gamePaused = !gamePaused; // Toggle gamePaused state
+    if (gamePaused) {
+        myMusic.stop();
+    } else {
+        myMusic.play();
+    }
 }
     
 </script>
