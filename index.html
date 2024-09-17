@@ -164,8 +164,8 @@ function updateGameArea() {
         gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
         // Push obstacles
-        myObstacles.push(new component(25, height, "pole.png", x, 0, "image"));
-        myObstacles.push(new component(25, x - height - gap, "pole.png", x, height + gap, "image"));
+        myObstacles.push(new component(15, height, "pole.png", x, 0, "image"));
+        myObstacles.push(new component(15, x - height - gap, "pole.png", x, height + gap, "image"));
 
         // Add collectibles (orange circle)
         myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle")); // Example collectible
