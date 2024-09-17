@@ -29,6 +29,9 @@ var mySound;
 var myMusic;
 var gamePaused = false; // Track if the game is paused
 var isMuted = false; // Track mute state
+var backgroundImage = new Image(); // Background image
+backgroundImage.src = "space.jpeg"; // Set the background image source
+var backgroundX = 0; // Horizontal position of the background
 
 function startGame() {
     myGamePiece = new component(30, 30, "spaceship.gif", 10, 120, "image");
@@ -77,6 +80,18 @@ var myGameArea = {
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
+}
+
+// Function to update and scroll the background
+function updateBackground() {
+    backgroundX -= 0.5; // Scroll the background
+    if (backgroundX <= -myGameArea.canvas.width) {
+        backgroundX = 0;
+    }
+    var ctx = myGameArea.context; // Get the context
+    // Draw the image twice to create a scrolling effect
+    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height); // Repeat image
 }
 
 // Modify component to allow image rendering and ensure spaceship image is loaded
@@ -180,6 +195,9 @@ function updateGameArea() {
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
+
+    // Call the updateBackground function to scroll the background
+    updateBackground();
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
