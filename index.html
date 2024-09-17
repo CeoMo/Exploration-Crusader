@@ -79,13 +79,18 @@ var myGameArea = {
     }
 }
 
-// Modify component to allow image rendering
+// Modify component to allow image rendering and ensure spaceship image is loaded
 function component(width, height, color, x, y, type) {
     this.type = type;
+    this.image = new Image();
+
     if (type == "image") {
-        this.image = new Image();
-        this.image.src = color;
+        this.image.src = color; // Set the source for the image
+        this.image.onload = () => { // Ensure the image is loaded before rendering
+            this.loaded = true; // Mark as loaded once the image is ready
+        };
     }
+    
     this.width = width;
     this.height = height;
     this.speedX = 0;
@@ -94,7 +99,7 @@ function component(width, height, color, x, y, type) {
     this.y = y;    
     this.update = function() {
         ctx = myGameArea.context;
-        if (this.type == "image") {
+        if (this.type == "image" && this.loaded) { // Draw only if the image is fully loaded
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         } else if (this.type == "circle") { // Draw the collectible as a circle
             ctx.beginPath();
@@ -111,30 +116,32 @@ function component(width, height, color, x, y, type) {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
-    
-    // Updated crashWith function
+
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;        
+    }
+
     this.crashWith = function(otherobj) {
         var crash = false;
 
         if (this.type === 'circle') {
-            // Calculate the center of the circle
+            // Circle collision detection
             var mycenterX = this.x + this.width / 2;
             var mycenterY = this.y + this.height / 2;
             var radius = this.width / 2;
 
-            // Check for collision with rectangle (obstacle)
             var otherleft = otherobj.x;
             var otherright = otherobj.x + otherobj.width;
             var othertop = otherobj.y;
             var otherbottom = otherobj.y + otherobj.height;
 
-            // Check if the circle's center is within the rectangle's boundaries
             if (mycenterX > otherleft && mycenterX < otherright && mycenterY > othertop && mycenterY < otherbottom) {
                 crash = true;
             }
 
         } else {
-            // Original rectangular collision detection for obstacles
+            // Rectangle collision detection
             var myleft = this.x;
             var myright = this.x + this.width;
             var mytop = this.y;
@@ -314,3 +321,4 @@ function toggleMute() {
 
 </body>
 </html>
+
