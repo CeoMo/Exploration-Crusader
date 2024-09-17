@@ -9,7 +9,7 @@ canvas {
 }
 </style>
 </head>
-<body onload="startGame()">
+<body>
 <script>
 
 var myGamePiece;
@@ -17,7 +17,6 @@ var myObstacles = [];
 var mySound;
 var myMusic;
 var gamePaused = false; // Track if the game is paused
-
 
 function startGame() {
     myGamePiece = new component(30, 30, "green", 10, 120);
@@ -102,34 +101,35 @@ function component(width, height, color, x, y) {
 
 function updateGameArea() {
     if (!gamePaused) { // Only update if game is not paused
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            mySound.play();
-            myMusic.stop();
-            myGameArea.stop();
-            return;
-        } 
+        var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+        for (i = 0; i < myObstacles.length; i += 1) {
+            if (myGamePiece.crashWith(myObstacles[i])) {
+                mySound.play();
+                myMusic.stop();
+                myGameArea.stop();
+                return;
+            } 
+        }
+        myGameArea.clear();
+        myGameArea.frameNo += 1;
+        if (myGameArea.frameNo == 1 || everyinterval(150)) {
+            x = myGameArea.canvas.width;
+            minHeight = 20;
+            maxHeight = 200;
+            height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+            minGap = 50;
+            maxGap = 200;
+            gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+            myObstacles.push(new component(10, height, "green", x, 0));
+            myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
+        }
+        for (i = 0; i < myObstacles.length; i += 1) {
+            myObstacles[i].x -= 1;
+            myObstacles[i].update();
+        }
+        myGamePiece.newPos();
+        myGamePiece.update();
     }
-    myGameArea.clear();
-    myGameArea.frameNo += 1;
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
-        minGap = 50;
-        maxGap = 200;
-        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
-        myObstacles.push(new component(10, height, "green", x, 0));
-        myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
-    }
-    for (i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x -= 1;
-        myObstacles[i].update();
-    }
-    myGamePiece.newPos();
-    myGamePiece.update();
 }
 
 function sound(src) {
@@ -172,6 +172,7 @@ function clearmove() {
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
 }
+
 // Function to pause or continue the game
 function pauseOrContinueGame() {
     gamePaused = !gamePaused; // Toggle gamePaused state
@@ -183,11 +184,17 @@ function pauseOrContinueGame() {
 }
     
 </script>
+
+<!-- Added buttons for starting and pausing the game -->
 <div style="text-align:center;width:480px;">
+  <button onclick="startGame()">Start Game</button>
+  <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
   <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
   <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
   <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
   <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
+
 </body>
 </html>
+
