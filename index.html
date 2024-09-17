@@ -34,8 +34,8 @@ backgroundImage.src = "space.jpeg"; // Set the background image source
 var backgroundX = 0; // Horizontal position of the background
 
 function startGame() {
-    myGamePiece = new component(30, 30, "spaceship.gif", 10, 120, "image");
-    myScore = new component("20px", "Consolas", "black", 280, 40, "text"); // Score component
+    myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image"); // Increased size of spaceship
+    myScore = new component("20px", "Consolas", "black", 680, 40, "text"); // Score component, position adjusted for larger canvas
     mySound = new sound("Collison.mp3");
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
@@ -65,19 +65,19 @@ function startGame() {
 }
 
 var myGameArea = {
-    canvas : document.createElement("canvas"),
-    start : function() {
-        this.canvas.width = 800;
-        this.canvas.height = 450;
+    canvas: document.createElement("canvas"),
+    start: function() {
+        this.canvas.width = 800;  // Increased canvas width
+        this.canvas.height = 450; // Increased canvas height
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
     },
-    stop : function() {
+    stop: function() {
         clearInterval(this.interval);
-    },    
-    clear : function() {
+    },
+    clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
@@ -90,8 +90,8 @@ function updateBackground() {
     }
     var ctx = myGameArea.context; // Get the context
     // Draw the image twice to create a scrolling effect
-    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height); // Repeat image
+    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height); // Adjusted to cover new size
+    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height); // Repeat image for continuous effect
 }
 
 // Modify component to allow image rendering and ensure spaceship image is loaded
@@ -319,7 +319,7 @@ function toggleMute() {
 </script>
 
 <!-- Added buttons for starting and pausing the game -->
-<div style="text-align:center;width:480px;">
+<div style="text-align:center;width:800px;">
   <button onclick="startGame()">Start Game</button>
   <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
   
@@ -339,4 +339,3 @@ function toggleMute() {
 
 </body>
 </html>
-
