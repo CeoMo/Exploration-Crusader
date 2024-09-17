@@ -7,6 +7,14 @@ canvas {
     border:1px solid #d3d3d3;
     background-image:url(space.jpeg);
 }
+#pauseImage {
+    display: none; /* Hide the image initially */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10; /* Make sure it's on top of the canvas */
+}
 </style>
 </head>
 <body>
@@ -173,16 +181,18 @@ function clearmove() {
     myGamePiece.speedY = 0; 
 }
 
-// Function to pause or continue the game
+// Function to pause or continue the game and show/hide pause image
 function pauseOrContinueGame() {
     gamePaused = !gamePaused; // Toggle gamePaused state
     if (gamePaused) {
         myMusic.stop();
+        document.getElementById("pauseImage").style.display = "block"; // Show pause image
     } else {
         myMusic.play();
+        document.getElementById("pauseImage").style.display = "none"; // Hide pause image
     }
 }
-    
+
 </script>
 
 <!-- Added buttons for starting and pausing the game -->
@@ -195,6 +205,8 @@ function pauseOrContinueGame() {
   <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
 
+<!-- Pause Image -->
+<img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
+
 </body>
 </html>
-
