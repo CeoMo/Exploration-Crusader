@@ -25,6 +25,7 @@ var myObstacles = [];
 var mySound;
 var myMusic;
 var gamePaused = false; // Track if the game is paused
+var isMuted = false; // Track mute state
 
 function startGame() {
     myGamePiece = new component(30, 30, "green", 10, 120);
@@ -152,7 +153,16 @@ function sound(src) {
     }
     this.stop = function(){
         this.sound.pause();
-    }    
+    }
+    this.setVolume = function(value) {
+        this.sound.volume = value; // Set volume (0 to 1)
+    }
+    this.mute = function() {
+        this.sound.muted = true;
+    }
+    this.unmute = function() {
+        this.sound.muted = false;
+    }
 }
 
 function everyinterval(n) {
@@ -193,12 +203,36 @@ function pauseOrContinueGame() {
     }
 }
 
+// Function to adjust game music volume
+function adjustVolume(value) {
+    myMusic.setVolume(value);
+}
+
+// Function to mute/unmute game music
+function toggleMute() {
+    if (isMuted) {
+        myMusic.unmute();
+        isMuted = false;
+        document.getElementById("muteButton").innerText = "Mute";
+    } else {
+        myMusic.mute();
+        isMuted = true;
+        document.getElementById("muteButton").innerText = "Unmute";
+    }
+}
+
 </script>
 
 <!-- Added buttons for starting and pausing the game -->
 <div style="text-align:center;width:480px;">
   <button onclick="startGame()">Start Game</button>
   <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
+  
+  <!-- Volume controls -->
+  <label for="volumeControl">Game Music Volume:</label>
+  <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
+  <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
+  
   <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
   <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
   <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
@@ -206,7 +240,7 @@ function pauseOrContinueGame() {
 </div>
 
 <!-- Pause Image -->
-<img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
+<img id="pauseImage" src="pause.jpeg" alt="Paused" width="100" height="100">
 
 </body>
 </html>
