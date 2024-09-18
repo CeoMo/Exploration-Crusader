@@ -8,62 +8,51 @@ canvas {
     background-image:url(space.jpeg);
 }
 #pauseImage {
-    display: none; /* Hide the image initially */
+    display: none;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 10; /* Make sure it's on top of the canvas */
+    z-index: 10;
 }
 </style>
 </head>
 <body>
 <script>
-
 var myGamePiece;
 var myObstacles = [];
-var myCollectibles = []; // New array to hold collectible items
+var myCollectibles = [];
 var myScore;
-var scoreCount = 0; // Score counter
+var scoreCount = 0;
 var mySound;
 var myMusic;
-var gamePaused = false; // Track if the game is paused
-var isMuted = false; // Track mute state
-var backgroundImage = new Image(); // Background image
-backgroundImage.src = "space.jpeg"; // Set the background image source
-var backgroundX = 0; // Horizontal position of the background
+var gamePaused = false;
+var isMuted = false;
+var backgroundImage = new Image();
+backgroundImage.src = "space.jpeg";
+var backgroundX = 0;
 
 function startGame() {
-    myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image"); // Increased size of spaceship
-    myScore = new component("20px", "Consolas", "black", 680, 40, "text"); // Score component, position adjusted for larger canvas
+    myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
+    myScore = new component("20px", "Consolas", "black", 680, 40, "text");
     mySound = new sound("Collison.mp3");
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
     myGameArea.start();
 
-    // Event listeners for keyboard controls
-    window.addEventListener('keydown', function (e) {
-        // Prevent default scrolling for arrow keys
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault();
-    }
+    window.addEventListener('keydown', function(e) {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+        }
         switch (e.key) {
-            case 'ArrowUp':
-                moveup();
-                break;
-            case 'ArrowDown':
-                movedown();
-                break;
-            case 'ArrowLeft':
-                moveleft();
-                break;
-            case 'ArrowRight':
-                moveright();
-                break;
+            case 'ArrowUp': moveup(); break;
+            case 'ArrowDown': movedown(); break;
+            case 'ArrowLeft': moveleft(); break;
+            case 'ArrowRight': moveright(); break;
         }
     });
 
-    window.addEventListener('keyup', function (e) {
+    window.addEventListener('keyup', function(e) {
         clearmove();
     });
 }
@@ -71,56 +60,48 @@ function startGame() {
 var myGameArea = {
     canvas: document.createElement("canvas"),
     start: function() {
-        this.canvas.width = 800;  // Increased canvas width
-        this.canvas.height = 450; // Increased canvas height
+        this.canvas.width = 800;
+        this.canvas.height = 450;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20);
+        this.interval = requestAnimationFrame(updateGameArea);
     },
     stop: function() {
-        clearInterval(this.interval);
+        cancelAnimationFrame(this.interval);
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-}
+};
 
-// Function to update and scroll the background
 function updateBackground() {
-    backgroundX -= 0.5; // Scroll the background
+    backgroundX -= 0.5;
     if (backgroundX <= -myGameArea.canvas.width) {
         backgroundX = 0;
     }
-    var ctx = myGameArea.context; // Get the context
-    // Draw the image twice to create a scrolling effect
-    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height); // Adjusted to cover new size
-    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height); // Repeat image for continuous effect
+    var ctx = myGameArea.context;
+    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 }
 
-// Modify component to allow image rendering and ensure spaceship image is loaded
 function component(width, height, color, x, y, type) {
     this.type = type;
     this.image = new Image();
-
     if (type == "image") {
-        this.image.src = color; // Set the source for the image
-        this.image.onload = () => { // Ensure the image is loaded before rendering
-            this.loaded = true; // Mark as loaded once the image is ready
-        };
+        this.image.src = color;
     }
-    
     this.width = width;
     this.height = height;
     this.speedX = 0;
-    this.speedY = 0;    
+    this.speedY = 0;
     this.x = x;
-    this.y = y;    
+    this.y = y;
     this.update = function() {
         ctx = myGameArea.context;
-        if (this.type == "image" && this.loaded) { // Draw only if the image is fully loaded
+        if (this.type == "image") {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        } else if (this.type == "circle") { // Draw the collectible as a circle
+        } else if (this.type == "circle") {
             ctx.beginPath();
             ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
             ctx.fillStyle = color;
@@ -134,55 +115,33 @@ function component(width, height, color, x, y, type) {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
-    }
-
+    };
     this.newPos = function() {
         this.x += this.speedX;
-        this.y += this.speedY;        
-    }
-
+        this.y += this.speedY;
+    };
     this.crashWith = function(otherobj) {
         var crash = false;
-
-        if (this.type === 'circle') {
-            // Circle collision detection
-            var mycenterX = this.x + this.width / 2;
-            var mycenterY = this.y + this.height / 2;
-            var radius = this.width / 2;
-
-            var otherleft = otherobj.x;
-            var otherright = otherobj.x + otherobj.width;
-            var othertop = otherobj.y;
-            var otherbottom = otherobj.y + otherobj.height;
-
-            if (mycenterX > otherleft && mycenterX < otherright && mycenterY > othertop && mycenterY < otherbottom) {
-                crash = true;
-            }
-
-        } else {
-            // Rectangle collision detection
-            var myleft = this.x;
-            var myright = this.x + this.width;
-            var mytop = this.y;
-            var mybottom = this.y + this.height;
-            var otherleft = otherobj.x;
-            var otherright = otherobj.x + otherobj.width;
-            var othertop = otherobj.y;
-            var otherbottom = otherobj.y + otherobj.height;
-            if (!(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright)) {
-                crash = true;
-            }
+        var myleft = this.x;
+        var myright = this.x + this.width;
+        var mytop = this.y;
+        var mybottom = this.y + this.height;
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + otherobj.width;
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + otherobj.height;
+        if (!(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright)) {
+            crash = true;
         }
-        
         return crash;
-    }
+    };
 }
 
 function updateGameArea() {
     if (gamePaused) {
-        return; // If the game is paused, do not update the game area
+        requestAnimationFrame(updateGameArea);
+        return;
     }
-
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
     for (i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
@@ -190,21 +149,18 @@ function updateGameArea() {
             myMusic.stop();
             myGameArea.stop();
             return;
-        } 
+        }
     }
 
-    // Check for collectible collection
     for (i = 0; i < myCollectibles.length; i += 1) {
         if (myGamePiece.crashWith(myCollectibles[i])) {
-            scoreCount++; // Increment score when a collectible is "collected"
-            myCollectibles.splice(i, 1); // Remove collectible from the array after it's collected
+            scoreCount++;
+            myCollectibles.splice(i, 1);
         }
     }
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
-
-    // Call the updateBackground function to scroll the background
     updateBackground();
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
@@ -215,103 +171,92 @@ function updateGameArea() {
         minGap = 50;
         maxGap = 200;
         gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-
-        // Push obstacles
         myObstacles.push(new component(15, height, "pole.png", x, 0, "image"));
         myObstacles.push(new component(15, x - height - gap, "pole.png", x, height + gap, "image"));
-
-        // Add collectibles (orange circle)
-        myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle")); // Example collectible
+        myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle"));
     }
 
-    // Update obstacles
     for (i = 0; i < myObstacles.length; i += 1) {
         myObstacles[i].x -= 1;
         myObstacles[i].update();
     }
 
-    // Update collectibles
     for (i = 0; i < myCollectibles.length; i += 1) {
         myCollectibles[i].x -= 1;
         myCollectibles[i].update();
     }
 
-    // Update score display
     myScore.text = "SCORE: " + scoreCount;
     myScore.update();
-    
     myGamePiece.newPos();
     myGamePiece.update();
+
+    requestAnimationFrame(updateGameArea); // Continue the game loop
 }
 
 function sound(src) {
     this.sound = document.createElement("audio");
     this.sound.src = src;
     this.sound.setAttribute("preload", "auto");
-    this.sound.setAttribute("controls", "none");
     this.sound.style.display = "none";
     document.body.appendChild(this.sound);
-    this.play = function(){
+    this.play = function() {
         this.sound.play();
-    }
-    this.stop = function(){
+    };
+    this.stop = function() {
         this.sound.pause();
-    }
+    };
     this.setVolume = function(value) {
-        this.sound.volume = value; // Set volume (0 to 1)
-    }
+        this.sound.volume = value;
+    };
     this.mute = function() {
         this.sound.muted = true;
-    }
+    };
     this.unmute = function() {
         this.sound.muted = false;
-    }
+    };
 }
 
 function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
-    return false;
+    return (myGameArea.frameNo / n) % 1 === 0;
 }
 
 function moveup() {
-    myGamePiece.speedY = -1; 
+    myGamePiece.speedY = -1;
 }
 
 function movedown() {
-    myGamePiece.speedY = 1; 
+    myGamePiece.speedY = 1;
 }
 
 function moveleft() {
-    myGamePiece.speedX = -1; 
+    myGamePiece.speedX = -1;
 }
 
 function moveright() {
-    myGamePiece.speedX = 1; 
+    myGamePiece.speedX = 1;
 }
 
 function clearmove() {
-    myGamePiece.speedX = 0; 
-    myGamePiece.speedY = 0; 
+    myGamePiece.speedX = 0;
+    myGamePiece.speedY = 0;
 }
 
-// Function to pause or continue the game and show/hide pause image
 function pauseOrContinueGame() {
-    gamePaused = !gamePaused; // Toggle gamePaused state
+    gamePaused = !gamePaused;
     if (gamePaused) {
         myMusic.stop();
-        document.getElementById("pauseImage").style.display = "block"; // Show pause image
+        document.getElementById("pauseImage").style.display = "block";
     } else {
         myMusic.play();
-        document.getElementById("pauseImage").style.display = "none"; // Hide pause image
+        document.getElementById("pauseImage").style.display = "none";
     }
 }
 
-// Function to adjust game music volume
 function adjustVolume(value) {
     myMusic.setVolume(value);
 }
 
-// Function to mute/unmute game music
 function toggleMute() {
     if (isMuted) {
         myMusic.unmute();
@@ -323,15 +268,12 @@ function toggleMute() {
         document.getElementById("muteButton").innerText = "Unmute";
     }
 }
-
 </script>
 
-<!-- Added buttons for starting and pausing the game -->
 <div style="text-align:center;width:800px;">
   <button onclick="startGame()">Start Game</button>
   <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
   
-  <!-- Volume controls -->
   <label for="volumeControl">Game Music Volume:</label>
   <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
   <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
@@ -342,8 +284,6 @@ function toggleMute() {
   <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
 
-<!-- Pause Image -->
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
-
 </body>
 </html>
