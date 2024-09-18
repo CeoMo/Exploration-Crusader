@@ -5,7 +5,7 @@
 <style>
 canvas {
     border:1px solid #d3d3d3;
-    display: none; /* Hide canvas initially */
+    background-image:url(space.jpeg);
 }
 #pauseImage {
     display: none;
@@ -15,35 +15,12 @@ canvas {
     transform: translate(-50%, -50%);
     z-index: 10;
 }
-
-/* Game controls */
-#gameControls {
-    text-align: center;
-    width: 800px;
-    display: none; /* Hide controls until the game starts */
-}
-
-/* Add a cartoonish font style for the Game Over message */
-@import url('https://fonts.googleapis.com/css2?family=Freckle+Face&display=swap');
-
-#gameOverText {
-    font-family: 'Freckle Face', cursive;
-    font-size: 60px;
-    color: red;
-    text-align: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 20;
-    display: none;
-}
 </style>
 </head>
 <body>
 <script>
 var myGamePiece;
-var myBlackHoles = [];
+var myObstacles = [];
 var myCollectibles = [];
 var myScore;
 var scoreCount = 0;
@@ -51,32 +28,18 @@ var mySound;
 var myMusic;
 var gamePaused = false;
 var isMuted = false;
-var gameOver = false;
 var backgroundImage = new Image();
-
 backgroundImage.src = "space.jpeg";
+var backgroundX = 0;
 
-// Initialize the game immediately without the loading screen
 function startGame() {
-    document.querySelector("canvas").style.display = "block"; // Show canvas
-    document.getElementById("gameControls").style.display = "block"; // Show game controls
-
-    // Reset game state
-    gameOver = false;
-    scoreCount = 0;
-    myBlackHoles = [];
-    myCollectibles = [];
-    document.getElementById("gameOverText").style.display = "none"; // Hide Game Over message
-
-    // Start the game area and create game components
-    myGameArea.start();
     myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
     myScore = new component("20px", "Consolas", "black", 680, 40, "text");
     mySound = new sound("Collison.mp3");
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
-    
-    // Initialize controls for movement
+    myGameArea.start();
+
     window.addEventListener('keydown', function(e) {
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
             e.preventDefault();
@@ -94,7 +57,6 @@ function startGame() {
     });
 }
 
-// Game area object
 var myGameArea = {
     canvas: document.createElement("canvas"),
     start: function() {
@@ -104,49 +66,25 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
         this.interval = requestAnimationFrame(updateGameArea);
-        // Always draw the background image every frame
-        this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
     },
     stop: function() {
         cancelAnimationFrame(this.interval);
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height); // Redraw background
     }
 };
 
-// Create a new black hole component
-function blackHole(radius, x, y) {
-    this.radius = radius;
-    this.x = x;
-    this.y = y;
-    this.update = function() {
-        var ctx = myGameArea.context;
-        // Create the black hole with a gradient
-        var gradient = ctx.createRadialGradient(this.x, this.y, this.radius / 3, this.x, this.y, this.radius);
-        gradient.addColorStop(0, "black");
-        gradient.addColorStop(1, "rgba(0, 0, 0, 0.5)");
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = gradient;
-        ctx.fill();
-    };
-    this.pull = function(player) {
-        var dx = this.x - player.x;
-        var dy = this.y - player.y;
-        var distance = Math.sqrt(dx * dx + dy * dy);
-
-        // Apply a gravitational pull effect if within a certain distance
-        var gravitationalPullRadius = this.radius * 3;
-        if (distance < gravitationalPullRadius) {
-            player.speedX += dx / 100; // Adjust pull strength
-            player.speedY += dy / 100;
-        }
-    };
+function updateBackground() {
+    backgroundX -= 0.5;
+    if (backgroundX <= -myGameArea.canvas.width) {
+        backgroundX = 0;
+    }
+    var ctx = myGameArea.context;
+    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 }
 
-// Create the game components
 function component(width, height, color, x, y, type) {
     this.type = type;
     this.image = new Image();
@@ -182,31 +120,70 @@ function component(width, height, color, x, y, type) {
         this.x += this.speedX;
         this.y += this.speedY;
     };
+    this.crashWith = function(otherobj) {
+        var crash = false;
+        var myleft = this.x;
+        var myright = this.x + this.width;
+        var mytop = this.y;
+        var mybottom = this.y + this.height;
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + otherobj.width;
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + otherobj.height;
+        if (!(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright)) {
+            crash = true;
+        }
+        return crash;
+    };
 }
 
-// Update game area
 function updateGameArea() {
-    if (gameOver) return; // Stop updates if game over
     if (gamePaused) {
         requestAnimationFrame(updateGameArea);
         return;
     }
-
-    var x, y;
-    myGameArea.clear(); // Ensure background is drawn each frame
-
-    for (i = 0; i < myBlackHoles.length; i++) {
-        myBlackHoles[i].pull(myGamePiece); // Apply gravitational pull to player
-        myBlackHoles[i].update(); // Draw the black hole
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            mySound.play();
+            myMusic.stop();
+            myGameArea.stop();
+            return;
+        }
     }
 
+    for (i = 0; i < myCollectibles.length; i += 1) {
+        if (myGamePiece.crashWith(myCollectibles[i])) {
+            scoreCount++;
+            myCollectibles.splice(i, 1);
+        }
+    }
+
+    myGameArea.clear();
     myGameArea.frameNo += 1;
+    updateBackground();
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
-        y = Math.floor(Math.random() * myGameArea.canvas.height);
-        // Add new black hole
-        myBlackHoles.push(new blackHole(30, x, y));
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+        myObstacles.push(new component(15, height, "pole.png", x, 0, "image"));
+        myObstacles.push(new component(15, x - height - gap, "pole.png", x, height + gap, "image"));
+        myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle"));
+    }
+
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x -= 1;
+        myObstacles[i].update();
+    }
+
+    for (i = 0; i < myCollectibles.length; i += 1) {
+        myCollectibles[i].x -= 1;
+        myCollectibles[i].update();
     }
 
     myScore.text = "SCORE: " + scoreCount;
@@ -217,20 +194,14 @@ function updateGameArea() {
     requestAnimationFrame(updateGameArea); // Continue the game loop
 }
 
-// Helper function for sounds
 function sound(src) {
     this.sound = document.createElement("audio");
     this.sound.src = src;
-    this.sound.onerror = function() {
-        console.error("Error loading sound:", src);
-    };
     this.sound.setAttribute("preload", "auto");
     this.sound.style.display = "none";
     document.body.appendChild(this.sound);
     this.play = function() {
-        this.sound.play().catch(function(error) {
-            console.error("Error playing sound:", error);
-        });
+        this.sound.play();
     };
     this.stop = function() {
         this.sound.pause();
@@ -250,7 +221,6 @@ function everyinterval(n) {
     return (myGameArea.frameNo / n) % 1 === 0;
 }
 
-// Player movement functions
 function moveup() {
     myGamePiece.speedY = -1;
 }
@@ -272,7 +242,6 @@ function clearmove() {
     myGamePiece.speedY = 0;
 }
 
-// Pause or continue game
 function pauseOrContinueGame() {
     gamePaused = !gamePaused;
     if (gamePaused) {
@@ -284,12 +253,10 @@ function pauseOrContinueGame() {
     }
 }
 
-// Adjust game music volume
 function adjustVolume(value) {
     myMusic.setVolume(value);
 }
 
-// Toggle mute on or off
 function toggleMute() {
     if (isMuted) {
         myMusic.unmute();
@@ -301,39 +268,22 @@ function toggleMute() {
         document.getElementById("muteButton").innerText = "Unmute";
     }
 }
-
-// Show Game Over screen
-function showGameOver() {
-    document.getElementById("gameOverText").style.display = "block";
-}
-
-// Reset the game
-function resetGame() {
-    myGameArea.stop();  // Stop the current game loop
-    startGame();  // Restart the game
-}
 </script>
 
-<!-- Game Controls and UI -->
-<div id="gameControls">
-    <button onclick="pauseOrContinueGame()">Pause/Continue</button>
-    <button onclick="resetGame()">Reset Game</button> <!-- Reset Game Button -->
-    <br><br>
-    
-    <label for="volumeControl">Game Music Volume:</label>
-    <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
-    <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
-    
-    <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
-    <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
-    <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
-    <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
+<div style="text-align:center;width:800px;">
+  <button onclick="startGame()">Start Game</button>
+  <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
+  
+  <label for="volumeControl">Game Music Volume:</label>
+  <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
+  <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
+  
+  <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
+  <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
+  <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
+  <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
 
-<!-- Game Over message styled in a cartoonish font -->
-<div id="gameOverText">GAME OVER!</div>
-
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
-
 </body>
 </html>
