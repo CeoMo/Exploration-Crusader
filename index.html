@@ -6,6 +6,7 @@
 canvas {
     border:1px solid #d3d3d3;
     background-image:url(space.jpeg);
+    display: none; /* Hide canvas initially */
 }
 #pauseImage {
     display: none;
@@ -14,6 +15,25 @@ canvas {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
+}
+
+/* Loading screen style */
+#loadingScreen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 20;
+    font-family: 'Freckle Face', cursive;
+    font-size: 50px;
+    color: #ff6600;
+}
+
+#gameControls {
+    text-align: center;
+    width: 800px;
+    display: none; /* Hide controls until the game starts */
 }
 
 /* Add a cartoonish font style for the Game Over message */
@@ -48,12 +68,13 @@ var gameOver = false;
 var backgroundImage = new Image();
 
 backgroundImage.src = "space.jpeg";
-backgroundImage.onload = function() {
-    // Start game only after image is loaded
-    startGame();
-};
 
+// Start game only after image is loaded and Start Game button clicked
 function startGame() {
+    document.getElementById("loadingScreen").style.display = "none"; // Hide loading screen
+    document.querySelector("canvas").style.display = "block"; // Show canvas
+    document.getElementById("gameControls").style.display = "block"; // Show game controls
+
     // Reset game state
     gameOver = false;
     scoreCount = 0;
@@ -62,7 +83,7 @@ function startGame() {
     document.getElementById("gameOverText").style.display = "none"; // Hide Game Over message
 
     myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
-    myScore = new component("20px", "Consolas", "red", 680, 40, "text");
+    myScore = new component("20px", "Consolas", "black", 680, 40, "text");
     mySound = new sound("Collison.mp3");
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
@@ -314,26 +335,33 @@ function resetGame() {
 }
 </script>
 
-<div style="text-align:center;width:800px;">
-  <button onclick="startGame()">Start Game</button>
-  <button onclick="pauseOrContinueGame()">Pause/Continue</button>
-  <button onclick="resetGame()">Reset Game</button> <!-- Added Reset Game Button -->
-  <br><br>
-  
-  <label for="volumeControl">Game Music Volume:</label>
-  <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
-  <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
-  
-  <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
-  <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
-  <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
-  <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
+<!-- Loading screen -->
+<div id="loadingScreen">
+    <h1>Exploration Crusader</h1>
+    <button onclick="startGame()">Start Game</button>
+</div>
+
+<!-- Game Controls and UI -->
+<div id="gameControls">
+    <button onclick="pauseOrContinueGame()">Pause/Continue</button>
+    <button onclick="resetGame()">Reset Game</button> <!-- Reset Game Button -->
+    <br><br>
+    
+    <label for="volumeControl">Game Music Volume:</label>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
+    <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
+    
+    <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
+    <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
+    <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
+    <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
 
 <!-- Game Over message styled in a cartoonish font -->
 <div id="gameOverText">GAME OVER!</div>
 
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
+
 </body>
 </html>
 
