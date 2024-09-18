@@ -15,6 +15,22 @@ canvas {
     transform: translate(-50%, -50%);
     z-index: 10;
 }
+
+/* Add a cartoonish font style for the Game Over message */
+@import url('https://fonts.googleapis.com/css2?family=Freckle+Face&display=swap');
+
+#gameOverText {
+    font-family: 'Freckle Face', cursive;
+    font-size: 60px;
+    color: red;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    display: none;
+}
 </style>
 </head>
 <body>
@@ -156,6 +172,7 @@ function updateGameArea() {
             mySound.play();
             myMusic.stop();
             gameOver = true; // Set gameOver flag
+            showGameOver();  // Show Game Over screen
             return;
         }
     }
@@ -287,6 +304,10 @@ function toggleMute() {
         document.getElementById("muteButton").innerText = "Unmute";
     }
 }
+
+function showGameOver() {
+    document.getElementById("gameOverText").style.display = "block";
+}
 </script>
 
 <div style="text-align:center;width:800px;">
@@ -303,7 +324,9 @@ function toggleMute() {
   <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
 
+<!-- Game Over message styled in a cartoonish font -->
+<div id="gameOverText">GAME OVER!</div>
+
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
 </body>
 </html>
-
