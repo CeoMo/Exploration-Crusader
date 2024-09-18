@@ -54,6 +54,13 @@ backgroundImage.onload = function() {
 };
 
 function startGame() {
+    // Reset game state
+    gameOver = false;
+    scoreCount = 0;
+    myObstacles = [];
+    myCollectibles = [];
+    document.getElementById("gameOverText").style.display = "none"; // Hide Game Over message
+
     myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
     myScore = new component("20px", "Consolas", "black", 680, 40, "text");
     mySound = new sound("Collison.mp3");
@@ -300,11 +307,18 @@ function toggleMute() {
 function showGameOver() {
     document.getElementById("gameOverText").style.display = "block";
 }
+
+function resetGame() {
+    myGameArea.stop();  // Stop the current game loop
+    startGame();  // Restart the game
+}
 </script>
 
 <div style="text-align:center;width:800px;">
   <button onclick="startGame()">Start Game</button>
-  <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
+  <button onclick="pauseOrContinueGame()">Pause/Continue</button>
+  <button onclick="resetGame()">Reset Game</button> <!-- Added Reset Game Button -->
+  <br><br>
   
   <label for="volumeControl">Game Music Volume:</label>
   <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
