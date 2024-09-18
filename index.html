@@ -28,9 +28,15 @@ var mySound;
 var myMusic;
 var gamePaused = false;
 var isMuted = false;
+var gameOver = false;
 var backgroundImage = new Image();
-backgroundImage.src = "space.jpeg";
 var backgroundX = 0;
+
+backgroundImage.src = "space.jpeg";
+backgroundImage.onload = function() {
+    // Start game only after image is loaded
+    startGame();
+};
 
 function startGame() {
     myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
@@ -138,21 +144,23 @@ function component(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
+    if (gameOver) return; // Stop updates if game over
     if (gamePaused) {
         requestAnimationFrame(updateGameArea);
         return;
     }
+
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
+    for (i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             mySound.play();
             myMusic.stop();
-            myGameArea.stop();
+            gameOver = true; // Set gameOver flag
             return;
         }
     }
 
-    for (i = 0; i < myCollectibles.length; i += 1) {
+    for (i = 0; i < myCollectibles.length; i++) {
         if (myGamePiece.crashWith(myCollectibles[i])) {
             scoreCount++;
             myCollectibles.splice(i, 1);
@@ -176,12 +184,18 @@ function updateGameArea() {
         myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle"));
     }
 
-    for (i = 0; i < myObstacles.length; i += 1) {
+    // Remove obstacles that move out of the screen
+    for (i = 0; i < myObstacles.length; i++) {
         myObstacles[i].x -= 1;
-        myObstacles[i].update();
+        if (myObstacles[i].x < -myObstacles[i].width) {
+            myObstacles.splice(i, 1); // Clean up obstacle
+            i--; // Adjust index after removing an item
+        } else {
+            myObstacles[i].update();
+        }
     }
 
-    for (i = 0; i < myCollectibles.length; i += 1) {
+    for (i = 0; i < myCollectibles.length; i++) {
         myCollectibles[i].x -= 1;
         myCollectibles[i].update();
     }
@@ -197,11 +211,16 @@ function updateGameArea() {
 function sound(src) {
     this.sound = document.createElement("audio");
     this.sound.src = src;
+    this.sound.onerror = function() {
+        console.error("Error loading sound:", src);
+    };
     this.sound.setAttribute("preload", "auto");
     this.sound.style.display = "none";
     document.body.appendChild(this.sound);
     this.play = function() {
-        this.sound.play();
+        this.sound.play().catch(function(error) {
+            console.error("Error playing sound:", error);
+        });
     };
     this.stop = function() {
         this.sound.pause();
@@ -287,3 +306,4 @@ function toggleMute() {
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
 </body>
 </html>
+
