@@ -56,7 +56,7 @@ canvas {
 <body>
 <script>
 var myGamePiece;
-var myObstacles = [];
+var myBlackHoles = [];
 var myCollectibles = [];
 var myScore;
 var scoreCount = 0;
@@ -78,7 +78,7 @@ function startGame() {
     // Reset game state
     gameOver = false;
     scoreCount = 0;
-    myObstacles = [];
+    myBlackHoles = [];
     myCollectibles = [];
     document.getElementById("gameOverText").style.display = "none"; // Hide Game Over message
 
@@ -128,6 +128,36 @@ var myGameArea = {
     }
 };
 
+// Create a new black hole component
+function blackHole(radius, x, y) {
+    this.radius = radius;
+    this.x = x;
+    this.y = y;
+    this.update = function() {
+        var ctx = myGameArea.context;
+        // Create the black hole with a gradient
+        var gradient = ctx.createRadialGradient(this.x, this.y, this.radius / 3, this.x, this.y, this.radius);
+        gradient.addColorStop(0, "black");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0.5)");
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+    };
+    this.pull = function(player) {
+        var dx = this.x - player.x;
+        var dy = this.y - player.y;
+        var distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Apply a gravitational pull effect if within a certain distance
+        var gravitationalPullRadius = this.radius * 3;
+        if (distance < gravitationalPullRadius) {
+            player.speedX += dx / 100; // Adjust pull strength
+            player.speedY += dy / 100;
+        }
+    };
+}
+
 function component(width, height, color, x, y, type) {
     this.type = type;
     this.image = new Image();
@@ -163,21 +193,6 @@ function component(width, height, color, x, y, type) {
         this.x += this.speedX;
         this.y += this.speedY;
     };
-    this.crashWith = function(otherobj) {
-        var crash = false;
-        var myleft = this.x;
-        var myright = this.x + this.width;
-        var mytop = this.y;
-        var mybottom = this.y + this.height;
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + otherobj.width;
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + otherobj.height;
-        if (!(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright)) {
-            crash = true;
-        }
-        return crash;
-    };
 }
 
 function updateGameArea() {
@@ -187,15 +202,10 @@ function updateGameArea() {
         return;
     }
 
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i++) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            mySound.play();
-            myMusic.stop();
-            gameOver = true; // Set gameOver flag
-            showGameOver();  // Show Game Over screen
-            return;
-        }
+    var x, y;
+    for (i = 0; i < myBlackHoles.length; i++) {
+        myBlackHoles[i].pull(myGamePiece); // Apply gravitational pull to player
+        myBlackHoles[i].update(); // Draw the black hole
     }
 
     for (i = 0; i < myCollectibles.length; i++) {
@@ -210,26 +220,9 @@ function updateGameArea() {
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 50;
-        maxGap = 200;
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(15, height, "pole.png", x, 0, "image"));
-        myObstacles.push(new component(15, x - height - gap, "pole.png", x, height + gap, "image"));
-        myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle"));
-    }
-
-    // Remove obstacles that move out of the screen
-    for (i = 0; i < myObstacles.length; i++) {
-        myObstacles[i].x -= 1;
-        if (myObstacles[i].x < -myObstacles[i].width) {
-            myObstacles.splice(i, 1); // Clean up obstacle
-            i--; // Adjust index after removing an item
-        } else {
-            myObstacles[i].update();
-        }
+        y = Math.floor(Math.random() * myGameArea.canvas.height);
+        // Add new black hole
+        myBlackHoles.push(new blackHole(30, x, y));
     }
 
     for (i = 0; i < myCollectibles.length; i++) {
@@ -364,4 +357,3 @@ function resetGame() {
 
 </body>
 </html>
-
