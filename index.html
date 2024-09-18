@@ -46,7 +46,6 @@ var gamePaused = false;
 var isMuted = false;
 var gameOver = false;
 var backgroundImage = new Image();
-var backgroundX = 0;
 
 backgroundImage.src = "space.jpeg";
 backgroundImage.onload = function() {
@@ -88,24 +87,18 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
         this.interval = requestAnimationFrame(updateGameArea);
+        // Draw static background
+        this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
     },
     stop: function() {
         cancelAnimationFrame(this.interval);
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Re-draw static background after clearing
+        this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
     }
 };
-
-function updateBackground() {
-    backgroundX -= 0.5;
-    if (backgroundX <= -myGameArea.canvas.width) {
-        backgroundX = 0;
-    }
-    var ctx = myGameArea.context;
-    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-}
 
 function component(width, height, color, x, y, type) {
     this.type = type;
@@ -186,7 +179,6 @@ function updateGameArea() {
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
-    updateBackground();
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
@@ -330,3 +322,4 @@ function showGameOver() {
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
 </body>
 </html>
+
