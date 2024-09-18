@@ -5,7 +5,6 @@
 <style>
 canvas {
     border:1px solid #d3d3d3;
-    background-image:url(space.jpeg);
     display: none; /* Hide canvas initially */
 }
 #pauseImage {
@@ -17,19 +16,7 @@ canvas {
     z-index: 10;
 }
 
-/* Loading screen style */
-#loadingScreen {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 20;
-    font-family: 'Freckle Face', cursive;
-    font-size: 50px;
-    color: #ff6600;
-}
-
+/* Game controls */
 #gameControls {
     text-align: center;
     width: 800px;
@@ -69,9 +56,8 @@ var backgroundImage = new Image();
 
 backgroundImage.src = "space.jpeg";
 
-// Start game only after image is loaded and Start Game button clicked
+// Initialize the game immediately without the loading screen
 function startGame() {
-    document.getElementById("loadingScreen").style.display = "none"; // Hide loading screen
     document.querySelector("canvas").style.display = "block"; // Show canvas
     document.getElementById("gameControls").style.display = "block"; // Show game controls
 
@@ -82,13 +68,15 @@ function startGame() {
     myCollectibles = [];
     document.getElementById("gameOverText").style.display = "none"; // Hide Game Over message
 
+    // Start the game area and create game components
+    myGameArea.start();
     myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
     myScore = new component("20px", "Consolas", "black", 680, 40, "text");
     mySound = new sound("Collison.mp3");
     myMusic = new sound("gamemusic.mp3");
     myMusic.play();
-    myGameArea.start();
-
+    
+    // Initialize controls for movement
     window.addEventListener('keydown', function(e) {
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
             e.preventDefault();
@@ -106,6 +94,7 @@ function startGame() {
     });
 }
 
+// Game area object
 var myGameArea = {
     canvas: document.createElement("canvas"),
     start: function() {
@@ -115,7 +104,7 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
         this.interval = requestAnimationFrame(updateGameArea);
-        // Draw static background
+        // Always draw the background image every frame
         this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
     },
     stop: function() {
@@ -123,8 +112,7 @@ var myGameArea = {
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        // Re-draw static background after clearing
-        this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+        this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height); // Redraw background
     }
 };
 
@@ -158,6 +146,7 @@ function blackHole(radius, x, y) {
     };
 }
 
+// Create the game components
 function component(width, height, color, x, y, type) {
     this.type = type;
     this.image = new Image();
@@ -195,6 +184,7 @@ function component(width, height, color, x, y, type) {
     };
 }
 
+// Update game area
 function updateGameArea() {
     if (gameOver) return; // Stop updates if game over
     if (gamePaused) {
@@ -203,19 +193,13 @@ function updateGameArea() {
     }
 
     var x, y;
+    myGameArea.clear(); // Ensure background is drawn each frame
+
     for (i = 0; i < myBlackHoles.length; i++) {
         myBlackHoles[i].pull(myGamePiece); // Apply gravitational pull to player
         myBlackHoles[i].update(); // Draw the black hole
     }
 
-    for (i = 0; i < myCollectibles.length; i++) {
-        if (myGamePiece.crashWith(myCollectibles[i])) {
-            scoreCount++;
-            myCollectibles.splice(i, 1);
-        }
-    }
-
-    myGameArea.clear();
     myGameArea.frameNo += 1;
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
@@ -223,11 +207,6 @@ function updateGameArea() {
         y = Math.floor(Math.random() * myGameArea.canvas.height);
         // Add new black hole
         myBlackHoles.push(new blackHole(30, x, y));
-    }
-
-    for (i = 0; i < myCollectibles.length; i++) {
-        myCollectibles[i].x -= 1;
-        myCollectibles[i].update();
     }
 
     myScore.text = "SCORE: " + scoreCount;
@@ -238,6 +217,7 @@ function updateGameArea() {
     requestAnimationFrame(updateGameArea); // Continue the game loop
 }
 
+// Helper function for sounds
 function sound(src) {
     this.sound = document.createElement("audio");
     this.sound.src = src;
@@ -270,6 +250,7 @@ function everyinterval(n) {
     return (myGameArea.frameNo / n) % 1 === 0;
 }
 
+// Player movement functions
 function moveup() {
     myGamePiece.speedY = -1;
 }
@@ -291,6 +272,7 @@ function clearmove() {
     myGamePiece.speedY = 0;
 }
 
+// Pause or continue game
 function pauseOrContinueGame() {
     gamePaused = !gamePaused;
     if (gamePaused) {
@@ -302,10 +284,12 @@ function pauseOrContinueGame() {
     }
 }
 
+// Adjust game music volume
 function adjustVolume(value) {
     myMusic.setVolume(value);
 }
 
+// Toggle mute on or off
 function toggleMute() {
     if (isMuted) {
         myMusic.unmute();
@@ -318,21 +302,17 @@ function toggleMute() {
     }
 }
 
+// Show Game Over screen
 function showGameOver() {
     document.getElementById("gameOverText").style.display = "block";
 }
 
+// Reset the game
 function resetGame() {
     myGameArea.stop();  // Stop the current game loop
     startGame();  // Restart the game
 }
 </script>
-
-<!-- Loading screen -->
-<div id="loadingScreen">
-    <h1>Exploration Crusader</h1>
-    <button onclick="startGame()">Start Game</button>
-</div>
 
 <!-- Game Controls and UI -->
 <div id="gameControls">
