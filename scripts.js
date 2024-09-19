@@ -9,7 +9,7 @@ var gamePaused = false;  // Flag to check if the game is paused
 var isMuted = false;  // Flag to check if the game is muted
 var gameOver = false;  // Flag to check if the game is over
 var backgroundImage = new Image();  // Variable to hold the background image
-backgroundImage.src = "..\HTML\Photots\space.jpeg";  // Source of the background image
+backgroundImage.src = "space.jpeg";  // Source of the background image
 var backgroundX = 0;  // Variable to control background scrolling
 
 function startGame() {
