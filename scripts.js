@@ -184,7 +184,7 @@ function updateGameArea() {
         myCollectibles[i].update();  // Update the collectible's position
     }
 
-    myScore.text = "SCORE: " + scoreCount;  // Update the score display
+    myScore.text = "Samples: " + scoreCount;  // Update the score display
     myScore.update();  // Redraw the score
     myGamePiece.newPos();  // Update the game piece's position
     myGamePiece.update();  // Redraw the game piece
