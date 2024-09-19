@@ -1,29 +1,35 @@
-html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
 
-<!-- Loading screen -->
+<!-- Loading screen with game instructions -->
 <div id="loadingScreen">
     <h1>Exploration Crusader</h1>
     <h2>Game Instructions</h2>
     <p>Have fun exploring through deep space, collecting these unique meteor samples for testing.</p>
     <p>But be careful—don't get too greedy or you might get sucked in by a blackhole!</p>
+    <!-- Button to start the game, triggers startGame() function -->
     <button onclick="startGame()">Start Game</button>
 </div>
-
+<!-- Game control buttons and volume control interface -->
 <div style="text-align:center;width:800px;">
+    <!-- Button to start the game, same function as the one on the loading screen -->
     <button onclick="startGame()">Start Game</button>
+    <!-- Button to pause or continue the game, triggers pauseOrContinueGame() function -->
     <button onclick="pauseOrContinueGame()">Pause/Continue</button>
+    <!-- Button to reset the game, triggers resetGame() function -->
     <button onclick="resetGame()">Reset Game</button>
     <br><br>
-  
+   <!-- Label and range slider to control the game music volume -->
     <label for="volumeControl">Game Music Volume:</label>
     <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
     <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
-
+<!-- Directional controls for moving the character in the game -->
+    <!-- Button to move up, triggers moveup() on mouse/touch events and clearmove() to stop -->
     <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
     <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
     <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
@@ -31,7 +37,7 @@ html lang="en">
 </div>
 
 
-
+<!-- Pause image that appears when the game is paused -->
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
 
 <!-- Game Over message styled in a cartoonish font -->
@@ -40,3 +46,4 @@ html lang="en">
 <script src="scripts.js"></script>
 </body>
 </html>
+
