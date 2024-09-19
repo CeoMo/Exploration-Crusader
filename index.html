@@ -1,289 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<style>
-canvas {
-    border:1px solid #d3d3d3;
-    background-image:url(space.jpeg);
-}
-#pauseImage {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-}
-</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-<script>
-var myGamePiece;
-var myObstacles = [];
-var myCollectibles = [];
-var myScore;
-var scoreCount = 0;
-var mySound;
-var myMusic;
-var gamePaused = false;
-var isMuted = false;
-var backgroundImage = new Image();
-backgroundImage.src = "space.jpeg";
-var backgroundX = 0;
 
-function startGame() {
-    myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");
-    myScore = new component("20px", "Consolas", "black", 680, 40, "text");
-    mySound = new sound("Collison.mp3");
-    myMusic = new sound("gamemusic.mp3");
-    myMusic.play();
-    myGameArea.start();
-
-    window.addEventListener('keydown', function(e) {
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-            e.preventDefault();
-        }
-        switch (e.key) {
-            case 'ArrowUp': moveup(); break;
-            case 'ArrowDown': movedown(); break;
-            case 'ArrowLeft': moveleft(); break;
-            case 'ArrowRight': moveright(); break;
-        }
-    });
-
-    window.addEventListener('keyup', function(e) {
-        clearmove();
-    });
-}
-
-var myGameArea = {
-    canvas: document.createElement("canvas"),
-    start: function() {
-        this.canvas.width = 800;
-        this.canvas.height = 450;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.frameNo = 0;
-        this.interval = requestAnimationFrame(updateGameArea);
-    },
-    stop: function() {
-        cancelAnimationFrame(this.interval);
-    },
-    clear: function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-};
-
-function updateBackground() {
-    backgroundX -= 0.5;
-    if (backgroundX <= -myGameArea.canvas.width) {
-        backgroundX = 0;
-    }
-    var ctx = myGameArea.context;
-    ctx.drawImage(backgroundImage, backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-    ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-}
-
-function component(width, height, color, x, y, type) {
-    this.type = type;
-    this.image = new Image();
-    if (type == "image") {
-        this.image.src = color;
-    }
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.x = x;
-    this.y = y;
-    this.update = function() {
-        ctx = myGameArea.context;
-        if (this.type == "image") {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        } else if (this.type == "circle") {
-            ctx.beginPath();
-            ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.closePath();
-        } else if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
-    };
-    this.newPos = function() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-    };
-    this.crashWith = function(otherobj) {
-        var crash = false;
-        var myleft = this.x;
-        var myright = this.x + this.width;
-        var mytop = this.y;
-        var mybottom = this.y + this.height;
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + otherobj.width;
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + otherobj.height;
-        if (!(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright)) {
-            crash = true;
-        }
-        return crash;
-    };
-}
-
-function updateGameArea() {
-    if (gamePaused) {
-        requestAnimationFrame(updateGameArea);
-        return;
-    }
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            mySound.play();
-            myMusic.stop();
-            myGameArea.stop();
-            return;
-        }
-    }
-
-    for (i = 0; i < myCollectibles.length; i += 1) {
-        if (myGamePiece.crashWith(myCollectibles[i])) {
-            scoreCount++;
-            myCollectibles.splice(i, 1);
-        }
-    }
-
-    myGameArea.clear();
-    myGameArea.frameNo += 1;
-    updateBackground();
-
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 50;
-        maxGap = 200;
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(15, height, "pole.png", x, 0, "image"));
-        myObstacles.push(new component(15, x - height - gap, "pole.png", x, height + gap, "image"));
-        myCollectibles.push(new component(20, 20, "orange", x, Math.random() * myGameArea.canvas.height, "circle"));
-    }
-
-    for (i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x -= 1;
-        myObstacles[i].update();
-    }
-
-    for (i = 0; i < myCollectibles.length; i += 1) {
-        myCollectibles[i].x -= 1;
-        myCollectibles[i].update();
-    }
-
-    myScore.text = "SCORE: " + scoreCount;
-    myScore.update();
-    myGamePiece.newPos();
-    myGamePiece.update();
-
-    requestAnimationFrame(updateGameArea); // Continue the game loop
-}
-
-function sound(src) {
-    this.sound = document.createElement("audio");
-    this.sound.src = src;
-    this.sound.setAttribute("preload", "auto");
-    this.sound.style.display = "none";
-    document.body.appendChild(this.sound);
-    this.play = function() {
-        this.sound.play();
-    };
-    this.stop = function() {
-        this.sound.pause();
-    };
-    this.setVolume = function(value) {
-        this.sound.volume = value;
-    };
-    this.mute = function() {
-        this.sound.muted = true;
-    };
-    this.unmute = function() {
-        this.sound.muted = false;
-    };
-}
-
-function everyinterval(n) {
-    return (myGameArea.frameNo / n) % 1 === 0;
-}
-
-function moveup() {
-    myGamePiece.speedY = -1;
-}
-
-function movedown() {
-    myGamePiece.speedY = 1;
-}
-
-function moveleft() {
-    myGamePiece.speedX = -1;
-}
-
-function moveright() {
-    myGamePiece.speedX = 1;
-}
-
-function clearmove() {
-    myGamePiece.speedX = 0;
-    myGamePiece.speedY = 0;
-}
-
-function pauseOrContinueGame() {
-    gamePaused = !gamePaused;
-    if (gamePaused) {
-        myMusic.stop();
-        document.getElementById("pauseImage").style.display = "block";
-    } else {
-        myMusic.play();
-        document.getElementById("pauseImage").style.display = "none";
-    }
-}
-
-function adjustVolume(value) {
-    myMusic.setVolume(value);
-}
-
-function toggleMute() {
-    if (isMuted) {
-        myMusic.unmute();
-        isMuted = false;
-        document.getElementById("muteButton").innerText = "Mute";
-    } else {
-        myMusic.mute();
-        isMuted = true;
-        document.getElementById("muteButton").innerText = "Unmute";
-    }
-}
-</script>
-
+<!-- Loading screen with game instructions -->
+<div id="loadingScreen">
+    <h1>Exploration Crusader</h1>
+    <h2>Game Instructions</h2>
+    <p>Have fun exploring through deep space, collecting these unique meteor samples for testing.</p>
+    <p>But be careful—don't get too greedy or you might get sucked in by a blackhole!</p>
+    <!-- Button to start the game, triggers startGame() function -->
+    <button onclick="startGame()">Start Game</button>
+</div>
+<!-- Game control buttons and volume control interface -->
 <div style="text-align:center;width:800px;">
-  <button onclick="startGame()">Start Game</button>
-  <button onclick="pauseOrContinueGame()">Pause/Continue</button><br><br>
-  
-  <label for="volumeControl">Game Music Volume:</label>
-  <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
-  <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
-  
-  <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
-  <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
-  <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
-  <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
+    <!-- Button to start the game, same function as the one on the loading screen -->
+    <button onclick="startGame()">Start Game</button>
+    <!-- Button to pause or continue the game, triggers pauseOrContinueGame() function -->
+    <button onclick="pauseOrContinueGame()">Pause/Continue</button>
+    <!-- Button to reset the game, triggers resetGame() function -->
+    <button onclick="resetGame()">Reset Game</button>
+    <br><br>
+   <!-- Label and range slider to control the game music volume -->
+    <label for="volumeControl">Game Music Volume:</label>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="adjustVolume(this.value)">
+    <button id="muteButton" onclick="toggleMute()">Mute</button><br><br>
+<!-- Directional controls for moving the character in the game -->
+    <!-- Button to move up, triggers moveup() on mouse/touch events and clearmove() to stop -->
+    <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
+    <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
+    <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
+    <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
 </div>
 
+
+<!-- Pause image that appears when the game is paused -->
 <img id="pauseImage" src="pause.png" alt="Paused" width="100" height="100">
+
+<!-- Game Over message styled in a cartoonish font -->
+<div id="gameOverText">GAME OVER!</div>
+
+<script src="scripts.js"></script>
 </body>
 </html>
