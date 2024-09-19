@@ -1,8 +1,8 @@
 var myGamePiece;  // Variable for the player's game piece (e.g., spaceship)
 var myObstacles = [];  // Array to store obstacles in the game
 var myCollectibles = [];  // Array to store collectibles in the game
-var myScore;  // Variable to store the score component
-var scoreCount = 0;  // Initial score value
+var mySamples;  // Variable to store the Samples component
+var SamplesCount = 0;  // Initial Samples value
 var mySound;  // Variable for sound effects
 var myMusic;  // Variable for background music
 var gamePaused = false;  // Flag to check if the game is paused
@@ -16,7 +16,7 @@ function startGame() {
     document.getElementById('loadingScreen').style.display = 'none';  // Hide the loading screen when the game starts
     
     myGamePiece = new component(50, 50, "spaceship.gif", 10, 200, "image");  // Create the game piece (spaceship)
-    myScore = new component("20px", "Consolas", "Red", 680, 40, "text");  // Create the score display
+    mySamples = new component("20px", "Consolas", "Red", 680, 40, "text");  // Create the Samples display
     mySound = new sound("Collison.mp3");  // Load the collision sound effect
     myMusic = new sound("gamemusic.mp3");  // Load the background music
     myMusic.play();  // Start playing the background music
@@ -24,7 +24,7 @@ function startGame() {
 
     // Reset the game state
     gameOver = false;  // Reset the gameOver flag
-    scoreCount = 0;  // Reset the score count
+    SamplesCount = 0;  // Reset the Samples count
     myObstacles = [];  // Clear existing obstacles
     myCollectibles = [];  // Clear existing collectibles
     document.getElementById("gameOverText").style.display = "none";  // Hide Game Over message
@@ -77,7 +77,7 @@ function updateBackground() {
     ctx.drawImage(backgroundImage, backgroundX + myGameArea.canvas.width, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 }
 
-// Component class to create game objects (e.g., obstacles, game piece, score)
+// Component class to create game objects (e.g., obstacles, game piece, Samples)
 function component(width, height, color, x, y, type) {
     this.type = type;  // Type of component (e.g., image, text)
     this.width = width;  // Width of the component
@@ -167,7 +167,7 @@ function updateGameArea() {
     // Check for collectible pickups
     for (var i = 0; i < myCollectibles.length; i++) {
         if (myGamePiece.crashWith(myCollectibles[i])) {
-            scoreCount++;  // Increase the score when a collectible is picked up
+            SamplesCount++;  // Increase the Samples when a collectible is picked up
             myCollectibles.splice(i, 1);  // Remove the collected item
         }
     }
@@ -184,8 +184,8 @@ function updateGameArea() {
         myCollectibles[i].update();  // Update the collectible's position
     }
 
-    myScore.text = "Samples: " + scoreCount;  // Update the score display
-    myScore.update();  // Redraw the score
+    mySamples.text = "Samples: " + SamplesCount;  // Update the Samples display
+    mySamples.update();  // Redraw the Samples
     myGamePiece.newPos();  // Update the game piece's position
     myGamePiece.update();  // Redraw the game piece
 
