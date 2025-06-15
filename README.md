@@ -1,6 +1,6 @@
 🚀 Exploration Crusader
 
-Exploration Crusader** is a web-based 2D space adventure game built using HTML5 Canvas, CSS, and JavaScript. Players control a spaceship to collect meteor samples while avoiding obstacles like black holes and space poles. The goal is to stay alive and score as many points as possible.
+Exploration Crusader is a web-based 2D space adventure game built using HTML5 Canvas, CSS, and JavaScript. Players control a spaceship to collect meteor samples while avoiding obstacles like black holes and space poles. The goal is to stay alive and score as many points as possible.
 
 This project showcases my front-end development skills, understanding of game loops and collision mechanics, and my ability to build polished, interactive user experiences with raw web technologies.
 
