@@ -15,7 +15,6 @@ This project showcases my front-end development skills, understanding of game lo
 📸 Screenshot
 
 ![Gameplay Screenshot](screenshot.png)  
-<sub>*Add a screenshot or GIF to highlight your game visually*</sub>
 
 ---
 
