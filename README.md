@@ -8,7 +8,7 @@ This project showcases my front-end development skills, understanding of game lo
 
 🔗 Live Demo
 
-🎮 [Play Exploration Crusader](https://yourusername.github.io/exploration-crusader/)
+🎮 [Play Exploration Crusader](https://ceomo.github.io/Exploration-Crusader/)
 
 
 
