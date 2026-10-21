@@ -1,65 +1,100 @@
-🚀 Exploration Crusader
+# Exploration Crusader
 
-Exploration Crusader is a web-based 2D space adventure game built using HTML5 Canvas, CSS, and JavaScript. Players control a spaceship to collect meteor samples while avoiding obstacles like black holes and space poles. The goal is to stay alive and score as many points as possible.
+A browser space arcade game by Mohamed Diallo, rebuilt with **React, TypeScript, Phaser and Python/FastAPI**. Fly through space, collect meteor samples, avoid black holes and submit your expedition to a persistent leaderboard.
 
-This project showcases my front-end development skills, understanding of game loops and collision mechanics, and my ability to build polished, interactive user experiences with raw web technologies.
+## Stack
 
----
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Interface | React + TypeScript | Menus, HUD, audio controls and leaderboard |
+| Game | Phaser 3 + TypeScript | Rendering, keyboard/touch input and simulation |
+| API | Python + FastAPI | Expedition registration and score submissions |
+| Persistence | SQLAlchemy + PostgreSQL | Stored flights and leaderboard |
+| Local database | SQLite | Zero-configuration development and API tests |
+| Build | Vite | Frontend development and production bundles |
 
-🔗 Live Demo
+The browser runs the real-time game; Python handles persistence. No Python installation is needed for players. The previous GitHub Pages demo is the legacy version. **GitHub Pages cannot host this Python backend.** This revision needs an application server and has not been deployed.
 
-🎮 [Play Exploration Crusader](https://ceomo.github.io/Exploration-Crusader/)
+## Local development
 
+Requires Node.js 24 and Python 3.12.
 
+```sh
+npm ci
+python3 -m venv .venv
+# Windows: .venv\Scripts\activate
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+uvicorn backend.app:app --reload --port 8001
+```
 
-📸 Screenshot
+In another terminal:
 
-![Gameplay Screenshot](screenshot.png)  
+```sh
+npm run dev
+```
 
----
+Open http://localhost:5173. Vite proxies `/api` to Python on port 8001. SQLite creates `crusader.db` locally; it is excluded from git.
 
-🧠 Key Features
+## Production build
 
-- 🎮 Smooth player controls** with real-time movement
-- 🌌 Scrolling background** for a seamless space effect
-- 🛰️ Collectibles system**: gather meteor samples to score
-- 🌑 Obstacles: black holes and space poles to avoid
-- 🔊 Audio controls**: background music and SFX with volume slider
-- 🚨 Accurate collision detection** using the Euclidean distance formula
-- ⏯️ Game states**: start, pause, and reset buttons
+```sh
+npm run build
+uvicorn backend.app:app --host 0.0.0.0 --port 8001
+```
 
----
+Open http://localhost:8001. FastAPI serves both the built game and `/api`, so no cross-origin configuration is needed. Re-start the server after the initial frontend build.
 
-## 🛠 Tech Stack
+For PostgreSQL, set `DATABASE_URL` to `postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE` before starting the server. Do not commit credentials.
 
-- HTML5 Canvas – for game rendering
-- JavaScript (Vanilla) – for game logic, input handling, collision detection
-- CSS3 – for styling and layout
+### Docker + PostgreSQL
 
----
+Copy `.env.example` to `.env`, replace the placeholder password, then run:
 
- 💡 What I Learned
+```sh
+docker compose up --build
+```
 
-This project helped me grow significantly as a developer. Some of my biggest takeaways:
+The game is available at http://localhost:8001. PostgreSQL data is stored in a named volume. The Docker/PostgreSQL path is supplied but has not yet been exercised in this workspace.
 
-- Switched from **bounding box to circular collision detection** for better accuracy
-- Solved a major bug with **background scrolling glitches** by using a dual-image system
-- Learned to prioritize **core gameplay mechanics** over extra features when under time constraints
-- Improved my understanding of **game loops**, **state management**, and **responsive design**
+## Controls
 
----
+- Arrow keys / WASD: fly. Touch players can hold the directional buttons.
+- P / Escape: pause or resume with the game field focused.
+- Restart: create a new expedition.
+- Audio controls: mute or adjust volume.
 
- 🧩 Challenges I Solved
+Switching away pauses the game. Best score is stored locally. The leaderboard uses an explicit submission form after a flight ends; pilot names and scores are public. If the API is unavailable, flights continue in practice mode and cannot be submitted.
 
-- Collision detection: Early hitboxes felt unfair — fixed using the Euclidean distance formula
-- Background glitches: Solved jumping by scrolling two images together
-- Scope creep: Focused on polish and core functionality instead of overloading features
+## API
 
----
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Application/database health |
+| POST | `/api/runs` | Register an expedition and return its ID |
+| POST | `/api/runs/{id}/score` | Submit nickname, integer score and duration once |
+| GET | `/api/leaderboard` | Top 20 flights, sorted by score then duration |
 
- 🧪 Run Locally
+Interactive documentation: `/docs`.
 
-1. Clone this repo:
-   ```bash
-   git clone https://github.com/yourusername/exploration-crusader.git
-   cd exploration-crusader
+The API rejects malformed values, duplicate submissions, expired expeditions and basic impossible time/score combinations. **Scores are still client-reported, not cheat-proof.** Accounts, server-authoritative replay validation, rate limiting and moderation are future work before a competitive public launch. Run IDs are bearer capabilities, not user authentication. The initial schema is created at startup; adopt migrations before changing a deployed database schema.
+
+## Validation
+
+```sh
+npm test
+npm run build
+python -m pytest backend/tests -q
+```
+
+Simulation tests cover frame-rate independence, bounds, diagonal speed, pause/reset, pickups, collisions and cleanup. API tests cover persistence across restarts, validation, duplicate submissions and missing expeditions. CI runs both suites and the production build.
+
+## Structure
+
+- `frontend/src/engine.ts`: rendering-independent typed game simulation.
+- `frontend/src/Game.ts`: Phaser scene and input/rendering adapter.
+- `frontend/src/main.tsx`: React interface and game lifecycle.
+- `frontend/src/api.ts`: typed backend requests with timeouts.
+- `backend/app.py`: application factory, data model and API routes.
+- `backend/tests/`, `tests/`: API and simulation tests.
+- `canvas/` and the remaining original image assets: historical prototype material, not the active entry point.
