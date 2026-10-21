@@ -18,11 +18,11 @@ export class SpaceScene extends Phaser.Scene {
     this.keys=this.input.keyboard?.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as typeof this.keys;
     this.input.keyboard?.disableGlobalCapture();
     this.music=this.sound.add('music',{loop:true,volume:1});
-    this.notify();
+    this.setAudio(this.muted,this.volume); this.notify();
   }
   start() { this.held.clear(); this.input.keyboard?.resetKeys(); this.model.start(); if(this.music){ this.music.stop(); this.music.play(); } this.notify(); }
   togglePause() { this.held.clear(); this.input.keyboard?.resetKeys(); this.model.togglePause(); this.syncAudio(); this.notify(); }
-  setAudio(muted:boolean,volume:number) { this.muted=muted; this.volume=volume; this.sound.mute=muted; this.sound.volume=volume; }
+  setAudio(muted:boolean,volume:number) { this.muted=muted; this.volume=volume; if(this.sound){this.sound.mute=muted; this.sound.volume=volume;} }
   private syncAudio() { if(this.model.state==='running')this.music?.resume(); else this.music?.pause(); }
   private notify() {this.onUpdate({state:this.model.state,score:this.model.score,elapsed:this.model.elapsed});}
   update(_time:number, delta:number) {
