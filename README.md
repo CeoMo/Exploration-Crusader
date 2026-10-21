@@ -2,6 +2,10 @@
 
 A browser space arcade game by Mohamed Diallo, rebuilt with **React, TypeScript, Phaser and Python/FastAPI**. Fly through space, collect meteor samples, avoid black holes and submit your expedition to a persistent leaderboard.
 
+[**Play Exploration Crusader**](https://exploration-crusader-play.ceomo.chatgpt.site)
+
+The public game currently runs in **practice mode**. Shared scores and the online leaderboard require the Python API to be deployed; personal best scores are stored in your browser.
+
 ## Stack
 
 | Layer | Technology | Responsibility |
@@ -13,7 +17,7 @@ A browser space arcade game by Mohamed Diallo, rebuilt with **React, TypeScript,
 | Local database | SQLite | Zero-configuration development and API tests |
 | Build | Vite | Frontend development and production bundles |
 
-The browser runs the real-time game; Python handles persistence. No Python installation is needed for players. The previous GitHub Pages demo is the legacy version. **GitHub Pages cannot host this Python backend.** This revision needs an application server and has not been deployed.
+The browser runs the real-time game; Python handles persistence. No Python installation is needed for players. The previous GitHub Pages demo is the legacy version. **GitHub Pages cannot host this Python backend.** The frontend is hosted at the play link above. The Python backend still needs an application server.
 
 ## Local development
 
