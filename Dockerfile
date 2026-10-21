@@ -15,4 +15,4 @@ RUN useradd --create-home app && mkdir -p /app/data && chown -R app:app /app
 USER app
 ENV DATABASE_URL=sqlite:////app/data/crusader.db
 EXPOSE 8001
-CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["sh", "-c", "exec uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8001}"]

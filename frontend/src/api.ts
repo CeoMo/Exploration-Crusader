@@ -1,6 +1,7 @@
+const apiOrigin = (import.meta.env.VITE_API_ORIGIN ?? "").replace(/\/$/, "");
 export interface Entry { nickname: string; score: number; duration: number }
 async function request<T>(path: string, body?: object): Promise<T> {
-  const response = await fetch(`/api${path}`, {method:body ? 'POST':'GET',headers:body ? {'Content-Type':'application/json'}:undefined,body:body ? JSON.stringify(body):undefined,signal:AbortSignal.timeout(8000)});
+  const response = await fetch(`${apiOrigin}/api${path}`, {method:body ? 'POST':'GET',headers:body ? {'Content-Type':'application/json'}:undefined,body:body ? JSON.stringify(body):undefined,signal:AbortSignal.timeout(8000)});
   if (!response.ok) {
     const error = await response.json().catch(() => null);
     throw new Error(typeof error?.detail === 'string' ? error.detail : 'Unable to save this score. Please try again.');

@@ -6,6 +6,7 @@ from time import time
 from uuid import uuid4
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy import create_engine, String, Float, Integer, select, update
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
@@ -28,8 +29,18 @@ class ScoreSubmission(BaseModel):
     duration: float = Field(ge=0, le=86400, allow_inf_nan=False)
 
 
+def normalize_database_url(url: str) -> str:
+    """Hosts commonly supply a URL without the installed psycopg driver name."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 def create_app(database_url: str | None = None):
-    url = database_url or os.getenv("DATABASE_URL", "sqlite:///./crusader.db")
+    url = normalize_database_url(database_url or os.getenv("DATABASE_URL", "sqlite:///./crusader.db"))
+    if os.getenv("ENVIRONMENT") == "production" and not url.startswith("postgresql+psycopg://"):
+        raise RuntimeError("Production requires a persistent PostgreSQL DATABASE_URL.")
     engine = create_engine(url, connect_args={"check_same_thread": False} if url.startswith("sqlite") else {}, pool_pre_ping=True)
 
     @asynccontextmanager
@@ -39,6 +50,11 @@ def create_app(database_url: str | None = None):
         engine.dispose()
 
     app = FastAPI(title="Exploration Crusader API", lifespan=lifespan)
+    origins = [value.strip() for value in os.getenv("ALLOWED_ORIGINS", "").split(",") if value.strip()]
+    if "*" in origins:
+        raise RuntimeError("Set explicit game origins instead of a wildcard.")
+    if origins:
+        app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
     @app.get("/api/health")
     def health():
